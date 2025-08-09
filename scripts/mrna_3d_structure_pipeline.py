@@ -220,14 +220,12 @@ class mRNA3DStructurePipeline:
             
             # Add method-specific commands
             if method == "rosetta":
-                f.write(f"# Run ROSETTA prediction using RNA modeling workflow\n")
-                f.write(f"# Set ROSETTA environment variable if not set\n")
-                f.write(f"if [ -z \"$RNA_ROSETTA_RUN_ROOT_DIR_MODELING\" ]; then\n")
-                f.write(f"    export RNA_ROSETTA_RUN_ROOT_DIR_MODELING=/tmp/rosetta\n")
-                f.write(f"fi\n")
+                f.write(f"# Run ROSETTA prediction using direct rna_denovo executable\n")
+                f.write(f"# Add ROSETTA to PATH\n")
+                f.write(f"export PATH=/orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin:\$PATH\n")
                 f.write(f"\n")
-                f.write(f"# Check if rna_rosetta_run.py is available\n")
-                f.write(f"if command -v rna_rosetta_run.py &> /dev/null; then\n")
+                f.write(f"# Check if rna_denovo.linuxgccrelease is available\n")
+                f.write(f"if command -v rna_denovo.linuxgccrelease &> /dev/null; then\n")
                 f.write(f"    echo 'Running ROSETTA RNA modeling for {method_name}...'\n")
                 f.write(f"    # Create working directory for ROSETTA\n")
                 f.write(f"    mkdir -p rosetta_work\n")
@@ -236,22 +234,28 @@ class mRNA3DStructurePipeline:
                 f.write(f"    # Copy input file to working directory\n")
                 f.write(f"    cp {input_file} .\n")
                 f.write(f"    \n")
-                f.write(f"    # Run ROSETTA RNA modeling with proper parameters\n")
-                f.write(f"    # -i: prepare folder and input files\n")
-                f.write(f"    # -e: make helices\n")
-                f.write(f"    # -r: run ROSETTA simulations\n")
-                f.write(f"    # -g: generate final models\n")
-                f.write(f"    # -n: number of structures (10 for testing)\n")
-                f.write(f"    # -c: number of CPUs (using SLURM allocation)\n")
-                f.write(f"    rna_rosetta_run.py -i -e -r -g -n 10 -c $SLURM_CPUS_ON_NODE input.fa\n")
+                f.write(f"    # Run ROSETTA RNA de novo modeling with proper parameters\n")
+                f.write(f"    # -nstruct: number of structures (10 for testing)\n")
+                f.write(f"    # -fasta: input FASTA file\n")
+                f.write(f"    # -out: output prefix\n")
+                f.write(f"    echo 'Starting ROSETTA rna_denovo...'\n")
+                f.write(f"    rna_denovo.linuxgccrelease -nstruct 10 -fasta input.fa -out {method_name}_rosetta\n")
+                f.write(f"    ROSETTA_EXIT_CODE=\$?\n")
+                f.write(f"    echo 'ROSETTA exit code: '\$ROSETTA_EXIT_CODE\n")
                 f.write(f"    \n")
                 f.write(f"    # Check if ROSETTA generated output files\n")
                 f.write(f"    if ls *.pdb 1> /dev/null 2>&1; then\n")
-                f.write(f"        echo 'ROSETTA completed successfully'\n")
+                f.write(f"        echo 'ROSETTA completed successfully - found PDB files:'\n")
+                f.write(f"        ls -la *.pdb\n")
                 f.write(f"        # Copy the best scoring PDB file to output directory\n")
-                f.write(f"        cp *.pdb ../{method_name}_rosetta.pdb 2>/dev/null || cp $(ls -t *.pdb | head -1) ../{method_name}_rosetta.pdb\n")
+                f.write(f"        cp *.pdb ../{method_name}_rosetta.pdb 2>/dev/null || cp \$(ls -t *.pdb | head -1) ../{method_name}_rosetta.pdb\n")
+                f.write(f"        echo 'Copied PDB file to output directory'\n")
                 f.write(f"    else\n")
-                f.write(f"        echo 'ROSETTA failed to generate PDB files, creating placeholder'\n")
+                f.write(f"        echo 'ROSETTA failed to generate PDB files'\n")
+                f.write(f"        echo 'Current directory contents:'\n")
+                f.write(f"        ls -la\n")
+                f.write(f"        echo 'ROSETTA work directory contents:'\n")
+                f.write(f"        ls -la rosetta_work/ 2>/dev/null || echo 'rosetta_work directory not found'\n")
                 f.write(f"        cd ..\n")
                 f.write(f"        cat > {method_name}_rosetta.pdb << 'EOF'\n")
                 f.write(f"ATOM      1  P   A     1       0.000   0.000   0.000\n")
@@ -260,12 +264,15 @@ class mRNA3DStructurePipeline:
                 f.write(f"ATOM      4  O5' A     1       0.000   0.000   1.000\n")
                 f.write(f"END\n")
                 f.write(f"EOF\n")
+                f.write(f"        echo 'Created placeholder PDB file'\n")
                 f.write(f"    fi\n")
                 f.write(f"    \n")
                 f.write(f"    # Return to output directory\n")
                 f.write(f"    cd ..\n")
                 f.write(f"else\n")
                 f.write(f"    echo 'ROSETTA not available, creating placeholder output'\n")
+                f.write(f"    echo 'Available ROSETTA executables:'\n")
+                f.write(f"    ls -la /orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin/rna_* 2>/dev/null || echo 'No ROSETTA executables found'\n")
                 f.write(f"    # Create a placeholder PDB file for testing\n")
                 f.write(f"    cat > {method_name}_rosetta.pdb << 'EOF'\n")
                 f.write(f"ATOM      1  P   A     1       0.000   0.000   0.000\n")
@@ -559,32 +566,23 @@ END""")
         """Check if ROSETTA is properly configured and available."""
         try:
             import subprocess
-            result = subprocess.run(
-                ["rna_rosetta_run.py", "--help"],
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            if result.returncode == 0:
-                # Check if environment variable is set or can be loaded from config
-                import os
-                if 'RNA_ROSETTA_RUN_ROOT_DIR_MODELING' in os.environ:
-                    self.logger.info("✓ ROSETTA environment variable is set")
-                    return True
-                else:
-                    # Try to load from local config
-                    try:
-                        import sys
-                        sys.path.insert(0, str(Path(__file__).parent))
-                        from rna_tools_config_local import RNA_ROSETTA_RUN_ROOT_DIR_MODELING
-                        self.logger.info(f"✓ ROSETTA config available: {RNA_ROSETTA_RUN_ROOT_DIR_MODELING}")
-                        return True
-                    except ImportError:
-                        self.logger.warning("ROSETTA wrapper available but no configuration found")
-                        return False
-            else:
-                self.logger.warning("ROSETTA wrapper not responding properly")
-                return False
+            import shutil
+            
+            # Check if rna_denovo executable is available
+            rna_denovo_path = shutil.which("rna_denovo")
+            if rna_denovo_path:
+                self.logger.info(f"✓ ROSETTA rna_denovo found: {rna_denovo_path}")
+                return True
+            
+            # Also check if ROSETTA is in the expected build directory
+            rosetta_bin_dir = Path("/orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin")
+            if rosetta_bin_dir.exists() and (rosetta_bin_dir / "rna_denovo.linuxgccrelease").exists():
+                self.logger.info(f"✓ ROSETTA found in build directory: {rosetta_bin_dir}")
+                return True
+                
+            self.logger.warning("ROSETTA executables not found in PATH or expected locations")
+            return False
+            
         except Exception as e:
             self.logger.warning(f"ROSETTA availability check failed: {e}")
             return False
