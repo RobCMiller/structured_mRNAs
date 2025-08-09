@@ -1,0 +1,90 @@
+# mRNA Structure Prediction Pipeline Configuration
+
+# General settings
+general:
+  project_name: "mRNA Structure Prediction"
+  version: "1.0.0"
+  log_level: "INFO"
+  output_dir: "data/output"
+  temp_dir: "data/temp"
+
+# Prediction methods
+prediction:
+  # Thermodynamic methods
+  rnafold:
+    enabled: true
+    temperature: 37.0
+    energy_model: "vienna"
+    max_bp_span: 0  # 0 = no limit
+    
+  mfold:
+    enabled: true
+    temperature: 37.0
+    max_structures: 10
+    
+  # Deep learning methods
+  deep_learning:
+    enabled: true
+    models:
+      - "eternafold"
+      - "rna-fm"
+    gpu_required: true
+    
+# Visualization settings
+visualization:
+  # Plot styles
+  style: "seaborn-v0_8"
+  figure_size: [12, 8]
+  dpi: 300
+  
+  # Color schemes
+  colors:
+    primary: "#1f77b4"
+    secondary: "#ff7f0e"
+    tertiary: "#2ca02c"
+    quaternary: "#d62728"
+    
+  # Structure plots
+  structure_plots:
+    show_energy: true
+    show_probability: true
+    layout: "circular"  # circular, linear, or radial
+    
+# Analysis settings
+analysis:
+  # Statistical tests
+  statistical_tests:
+    - "wilcoxon"
+    - "mann_whitney"
+    - "kruskal_wallis"
+    
+  # Metrics
+  metrics:
+    - "mfe"
+    - "ensemble_diversity"
+    - "base_pair_probability"
+    - "structure_entropy"
+    
+# Remote computation
+remote:
+  enabled: true
+  server: "satori"
+  remote_data_dir: "/orcd/data/mbathe/001/rcm095/RNA_predictions"
+  slurm:
+    partition: "sched_cdrennan"
+    time_limit: "24:00:00"
+    memory: "64000"
+    cpus_per_task: 8
+    gpus: 2
+    
+# File formats
+formats:
+  input:
+    - "fasta"
+    - "fastq"
+    - "txt"
+  output:
+    - "png"
+    - "pdf"
+    - "svg"
+    - "json" 

@@ -1,0 +1,10 @@
+# Core scientific computing
+numpy>=1.21.0
+matplotlib>=3.5.0
+
+# Bioinformatics
+biopython>=1.79
+
+# Configuration and utilities
+pyyaml>=6.0
+click>=8.0.0
