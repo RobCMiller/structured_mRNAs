@@ -36,13 +36,25 @@ python scripts/mrna_visualization_pipeline.py TETRAHYMENA output/comparisons/
 - **Conda Environment**: `rna_prediction`
 
 ### **Remote Execution Workflow**
-1. **SSH to server**: `ssh satori`
+1. **SSH to server**: `ssh satori` (avoid `-XY` flags which can cause hanging)
 2. **Navigate to project**: `cd /orcd/data/mbathe/001/rcm095/RNA_predictions`
-3. **Activate environment**: `source /nobackup/users/jhdavis/cd_software/miniconda3/etc/profile.d/conda.sh && conda activate rna_prediction`
+3. **Activate conda environment**: 
+   ```bash
+   add_cd_conda                    # Sources main conda environment
+   conda activate rna_prediction   # Activates our RNA prediction environment
+   ```
 4. **Run pipeline**: `python3 scripts/mrna_structure_pipeline.py TETRAHYMENA`
 5. **Generate visualizations**: `python3 scripts/mrna_visualization_pipeline.py TETRAHYMENA output/comparisons/`
 6. **Run 3D predictions**: `python3 scripts/mrna_3d_structure_pipeline.py TETRAHYMENA --methods rosetta`
 7. **Download results**: `./scripts/download_visualizations.sh` (from local machine)
+
+### **ROSETTA Setup and Usage**
+- **ROSETTA is installed**: Built from source in `/orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/`
+- **PATH configured**: ROSETTA executables are automatically added to PATH via `~/.bashrc`
+- **Available executables**: `rna_denovo.linuxgccrelease`, `rna_score.linuxgccrelease`, `rna_minimize.linuxgccrelease`, etc.
+- **Executable naming**: All ROSETTA tools have `.linuxgccrelease` suffix
+- **No wrapper scripts needed**: Pipeline directly uses ROSETTA executables
+- **Test ROSETTA**: `which rna_denovo.linuxgccrelease` should show the path after sourcing bashrc
 
 ### **Important: Code Changes Must Be Pushed to Remote Server**
 - **All code changes must be pushed to the remote server**: The remote server is the final codebase where all processing and finalized code must live
@@ -67,12 +79,13 @@ rsync -avz scripts/ satori:/orcd/data/mbathe/001/rcm095/RNA_predictions/scripts/
 
 ### **3D Structure Prediction Pipeline Status**
 - ✅ **Pipeline Working**: 3D structure prediction pipeline is fully functional
-- ✅ **ROSETTA Integration**: ROSETTA predictions working with placeholder mode when not configured
+- ✅ **ROSETTA Integration**: ROSETTA is fully installed and configured - no more placeholder mode!
+- ✅ **ROSETTA Executables**: `rna_denovo`, `rna_score`, `rna_minimize` and other RNA tools available
 - ✅ **SLURM Integration**: Jobs submitted and monitored successfully
 - ✅ **Error Handling**: Comprehensive error handling and logging implemented
 - ✅ **Testing Framework**: Test script validates pipeline setup and execution
 - ✅ **File Naming**: Handles multiple naming conventions for comprehensive results
-- ✅ **Placeholder Mode**: Creates test outputs when 3D structure tools aren't available
+- ✅ **Direct ROSETTA Usage**: Pipeline now uses actual ROSETTA executables instead of wrappers
 
 ### **3D Structure Pipeline Usage**
 ```bash
@@ -96,6 +109,14 @@ cat output/3d_structures/TETRAHYMENA_5UTR/TETRAHYMENA_5UTR_3d_results.json
 - **3D structure testing**: `python3 scripts/test_3d_pipeline.py TETRAHYMENA --check-only`
 - **Local testing will skip remote-dependent tests** and show warnings
 - **For full testing**: SSH to satori and run tests there
+
+### **Troubleshooting Common Issues**
+- **SSH hanging**: Use `ssh satori` (avoid `-XY` flags which can cause hanging)
+- **Conda not found**: Always use `source /home/jhdavis/.start_cd_conda.sh` first, then `conda activate rna_prediction`
+- **ROSETTA not found**: Use `which rna_denovo.linuxgccrelease` (note the `.linuxgccrelease` suffix)
+- **ROSETTA PATH**: If not found, manually export: `export PATH=/orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin:\$PATH`
+- **Terminal output issues**: Commands work but output may not display - check file results directly
+- **ROSETTA compilation**: If rebuilding needed, use SLURM: `get_cd_node_mbathe` for high-resource compilation
 
 ### **Important Commands**
 ```bash

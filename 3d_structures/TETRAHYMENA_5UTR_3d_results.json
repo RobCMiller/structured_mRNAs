@@ -1,0 +1,194 @@
+{
+  "default": {
+    "rosetta": {
+      "method": "rosetta",
+      "parameters": "default",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((...((((((....((((.((....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).))))))).)))).))))))))))...((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/rosetta/output/default/default_rosetta.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "simrna": {
+      "method": "simrna",
+      "parameters": "default",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((...((((((....((((.((....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).))))))).)))).))))))))))...((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/simrna/output/default/default_simrna.trafl",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "farna": {
+      "method": "farna",
+      "parameters": "default",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((...((((((....((((.((....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).))))))).)))).))))))))))...((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/farna/output/default/default_farna.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    }
+  },
+  "temperature_25C": {
+    "rosetta": {
+      "method": "rosetta",
+      "parameters": "temperature_25C",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((.......))((((.((..(((....((((((.....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).)))))(((((....)))))))))))..)))..))))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/rosetta/output/temperature_25C/temperature_25C_rosetta.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "simrna": {
+      "method": "simrna",
+      "parameters": "temperature_25C",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((.......))((((.((..(((....((((((.....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).)))))(((((....)))))))))))..)))..))))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/simrna/output/temperature_25C/temperature_25C_simrna.trafl",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "farna": {
+      "method": "farna",
+      "parameters": "temperature_25C",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((.......))((((.((..(((....((((((.....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).)))))(((((....)))))))))))..)))..))))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/farna/output/temperature_25C/temperature_25C_farna.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    }
+  },
+  "temperature_50C": {
+    "rosetta": {
+      "method": "rosetta",
+      "parameters": "temperature_50C",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((.((..(((....((((((.....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).)))))(((((....)))))))))))..)))..))))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/rosetta/output/temperature_50C/temperature_50C_rosetta.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "simrna": {
+      "method": "simrna",
+      "parameters": "temperature_50C",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((.((..(((....((((((.....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).)))))(((((....)))))))))))..)))..))))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/simrna/output/temperature_50C/temperature_50C_simrna.trafl",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "farna": {
+      "method": "farna",
+      "parameters": "temperature_50C",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((.((..(((....((((((.....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).)))))(((((....)))))))))))..)))..))))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/farna/output/temperature_50C/temperature_50C_farna.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    }
+  },
+  "maxspan_20": {
+    "rosetta": {
+      "method": "rosetta",
+      "parameters": "maxspan_20",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "(((.(((.....)))..))).(((......)))...((((....)))).(((....))).....(((((.....)))))..((((...))))(((((((....)))).)))....((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/rosetta/output/maxspan_20/maxspan_20_rosetta.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "simrna": {
+      "method": "simrna",
+      "parameters": "maxspan_20",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "(((.(((.....)))..))).(((......)))...((((....)))).(((....))).....(((((.....)))))..((((...))))(((((((....)))).)))....((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/simrna/output/maxspan_20/maxspan_20_simrna.trafl",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "farna": {
+      "method": "farna",
+      "parameters": "maxspan_20",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "(((.(((.....)))..))).(((......)))...((((....)))).(((....))).....(((((.....)))))..((((...))))(((((((....)))).)))....((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/farna/output/maxspan_20/maxspan_20_farna.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    }
+  },
+  "noGU": {
+    "rosetta": {
+      "method": "rosetta",
+      "parameters": "noGU",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((.((..(((((....((((((..(...(((......))).....)....))))))(((....)))..((((.(((..........)))))))....)))))((((....)))).(((....)))....)))).",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/rosetta/output/noGU/noGU_rosetta.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "simrna": {
+      "method": "simrna",
+      "parameters": "noGU",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((.((..(((((....((((((..(...(((......))).....)....))))))(((....)))..((((.(((..........)))))))....)))))((((....)))).(((....)))....)))).",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/simrna/output/noGU/noGU_simrna.trafl",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "farna": {
+      "method": "farna",
+      "parameters": "noGU",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((.((..(((((....((((((..(...(((......))).....)....))))))(((....)))..((((.(((..........)))))))....)))))((((....)))).(((....)))....)))).",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/farna/output/noGU/noGU_farna.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    }
+  },
+  "partfunc": {
+    "rosetta": {
+      "method": "rosetta",
+      "parameters": "partfunc",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((...((((((....((((.((....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).))))))).)))).))))))))))...((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/rosetta/output/partfunc/partfunc_rosetta.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "simrna": {
+      "method": "simrna",
+      "parameters": "partfunc",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((...((((((....((((.((....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).))))))).)))).))))))))))...((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/simrna/output/partfunc/partfunc_simrna.trafl",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    },
+    "farna": {
+      "method": "farna",
+      "parameters": "partfunc",
+      "sequence": "GGCAGGAAACCGGUGAGUAGCGCAGGGUUCGGUGUAGUCCGUGAGGCGAAAGCGCUAGCCGAAAGGCGAAACCGCUGAUGAGUAGCGCAGGGUUCGAUCCGGUAGCGAAAGCGCUAGCCGAAAGGCGAAACCGCU",
+      "structure": "((((...((((((....((((.((....(((.((..((((.((((((..((...((((....))))..))..))))))....)))).))))))).)))).))))))))))...((((....))))",
+      "pdb_file": "/orcd/data/mbathe/001/rcm095/RNA_predictions/output/3d_structures/TETRAHYMENA_5UTR/farna/output/partfunc/partfunc_farna.pdb",
+      "energy": null,
+      "rmsd": null,
+      "quality_score": null
+    }
+  }
+}
