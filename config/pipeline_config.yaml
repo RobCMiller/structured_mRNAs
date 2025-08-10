@@ -18,9 +18,10 @@ prediction:
     max_bp_span: 0  # 0 = no limit
     
   mfold:
-    enabled: true
+    enabled: false  # Temporarily disabled - mfold 3.6 has interactive-only issues
     temperature: 37.0
     max_structures: 10
+    # TODO: Revisit mfold integration when we find a non-interactive version
     
   # Deep learning methods
   deep_learning:

@@ -151,7 +151,7 @@ output/
 │       │   ├── maxspan_20/
 │       │   ├── noGU/
 │       │   └── partfunc/
-│       ├── mfold/                      # Future: Mfold predictions
+│       ├── mfold/                      # ⚠️ Temporarily disabled - mfold 3.6 has interactive-only issues
 │       └── deep_learning/              # Future: Deep learning models
 ├── comparisons/
 │   ├── {PREFIX}_comprehensive_results.json
@@ -289,7 +289,7 @@ RNAFOLD_TEMPERATURE_50C:
 ## 🔮 Future Enhancements
 
 ### **Planned Features**
-- **Mfold Integration**: Additional thermodynamic prediction method
+- **Mfold Integration**: Additional thermodynamic prediction method (⚠️ **Temporarily Disabled** - mfold 3.6 has interactive-only issues, will revisit when we find a non-interactive version)
 - **Deep Learning Models**: EternaFold, RNA-FM integration
 - **3D Structure Visualization**: PyMOL, ChimeraX integration
 - **Statistical Analysis**: Confidence intervals, significance testing
@@ -334,6 +334,16 @@ python scripts/mrna_visualization_pipeline.py TETRAHYMENA output/comparisons/
 # Use different working directory
 python scripts/mrna_structure_pipeline.py TEST --work-dir /scratch/rna_analysis
 ```
+
+## ⚠️ Current Limitations
+
+### **Known Issues**
+- **Mfold Integration**: mfold 3.6 is fundamentally interactive-only and cannot be automated. The pipeline has been updated to skip mfold predictions until we find a non-interactive version or alternative tool.
+- **ROSETTA Build**: Currently building ROSETTA on the remote server. Once complete, this will provide powerful 3D structure prediction capabilities.
+
+### **Workarounds**
+- **RNAfold**: Fully functional and provides excellent secondary structure predictions
+- **3D Structure Pipeline**: Available with placeholder mode for testing, will be fully functional once ROSETTA build completes
 
 ## 🎯 Best Practices
 

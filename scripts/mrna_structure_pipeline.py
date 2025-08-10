@@ -23,6 +23,7 @@ import re
 from typing import Dict, List, Any, Optional
 import argparse
 import sys
+import os
 
 
 class StructureResult:
@@ -90,12 +91,15 @@ class mRNAStructurePipeline:
         print(f"Setting up directory structure for {self.sequence_name}...")
         
         # Create main directories
-        for method in ["rnafold", "mfold", "deep_learning"]:
+        for method in ["rnafold", "deep_learning"]:  # Temporarily removed mfold
             method_dir = self.output_dir / method
             for param_name in self.rnafold_parameters.keys():
                 param_dir = method_dir / param_name
                 for subdir in ["raw_output", "parsed_results", "summary"]:
                     (param_dir / subdir).mkdir(parents=True, exist_ok=True)
+        
+        # TODO: Re-enable mfold directories when we find a non-interactive version
+        # for method in ["rnafold", "mfold", "deep_learning"]:
         
         self.comparisons_dir.mkdir(parents=True, exist_ok=True)
         
@@ -161,6 +165,111 @@ class mRNAStructurePipeline:
                 
             except subprocess.CalledProcessError as e:
                 print(f"    ✗ {param_name} failed: {e}")
+    
+    def run_mfold_predictions(self, input_file: Path):
+        """Run Mfold with all parameter combinations."""
+        print(f"Running Mfold predictions for {self.sequence_name}...")
+        
+        # Mfold parameters to test
+        mfold_parameters = {
+            "default": {"temperature": 37.0, "max_structures": 10},
+            "temperature_25C": {"temperature": 25.0, "max_structures": 10},
+            "temperature_50C": {"temperature": 50.0, "max_structures": 10},
+            "max_structures_5": {"temperature": 37.0, "max_structures": 5},
+            "max_structures_20": {"temperature": 37.0, "max_structures": 20}
+        }
+        
+        for param_name, params in mfold_parameters.items():
+            print(f"  Running {param_name}...")
+            
+            # Create output directory
+            output_dir = self.output_dir / "mfold" / param_name / "raw_output"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Set environment variables for mfold
+            env = os.environ.copy()
+            env['SEQ'] = str(input_file)
+            env['T'] = str(params['temperature'])
+            env['MAX'] = str(params['max_structures'])
+            
+            try:
+                # Run mfold
+                result = subprocess.run(['mfold'], 
+                                      capture_output=True, 
+                                      text=True, 
+                                      check=True,
+                                      cwd=output_dir,
+                                      env=env)
+                
+                # Save mfold output
+                with open(output_dir / "mfold.log", 'w') as f:
+                    f.write(result.stdout)
+                if result.stderr:
+                    with open(output_dir / "mfold.error", 'w') as f:
+                        f.write(result.stderr)
+                
+                print(f"    ✓ {param_name} completed")
+                
+            except subprocess.CalledProcessError as e:
+                print(f"    ✗ {param_name} failed: {e}")
+                # Save error output
+                with open(output_dir / "mfold.error", 'w') as f:
+                    f.write(f"Error: {e}\nStderr: {e.stderr}")
+    
+    def parse_mfold_output(self, output_dir: Path) -> Optional[StructureResult]:
+        """Parse Mfold output directory and extract structure information."""
+        if not output_dir.exists():
+            return None
+        
+        # Look for mfold output files
+        pnt_file = output_dir / "sequence-local.pnt"
+        sav_file = output_dir / "sequence.sav"
+        
+        if not pnt_file.exists() or not sav_file.exists():
+            return None
+        
+        try:
+            # Parse the .pnt file to get sequence info
+            with open(pnt_file, 'r') as f:
+                lines = f.readlines()
+            
+            sequence = ""
+            for line in lines:
+                if line.startswith('#'):
+                    continue
+                if line.strip() and not line.startswith(' '):
+                    # This should be the sequence
+                    seq_line = line.strip()
+                    if len(seq_line) > 0:
+                        sequence = seq_line
+                        break
+            
+            if not sequence:
+                return None
+            
+            # For now, create a simple structure (all unpaired)
+            # In practice, we'd need mfold_util to extract real structures from .sav files
+            structure = '.' * len(sequence)
+            
+            # Calculate basic metrics
+            gc_content = (sequence.count('G') + sequence.count('C')) / len(sequence)
+            base_pair_density = 0.0  # No base pairs in this simple structure
+            
+            return StructureResult(
+                method="mfold",
+                parameters="default",
+                sequence=sequence,
+                structure=structure,
+                energy=None,  # Would need mfold_util to extract
+                base_pairs=[],
+                num_base_pairs=0,
+                gc_content=gc_content,
+                base_pair_density=base_pair_density
+            )
+            
+        except Exception as e:
+            print(f"Failed to parse mfold output: {e}")
+            return None
     
     def parse_rnafold_output(self, fold_file: Path) -> Optional[StructureResult]:
         """Parse RNAfold output file and extract structure information."""
@@ -250,11 +359,22 @@ class mRNAStructurePipeline:
         """Collect all prediction results."""
         results = {}
         
+        # Collect RNAfold results
         for param_name in self.rnafold_parameters.keys():
             fold_file = self.output_dir / "rnafold" / param_name / "raw_output" / "structure.fold"
             result = self.parse_rnafold_output(fold_file)
             if result:
                 results[f"rnafold_{param_name}"] = result
+        
+        # Collect Mfold results - Temporarily disabled
+        # mfold_parameters = ["default", "temperature_25C", "temperature_50C", "max_structures_5", "max_structures_20"]
+        # for param_name in mfold_parameters:
+        #     output_dir = self.output_dir / "mfold" / param_name / "raw_output"
+        #     result = self.parse_mfold_output(output_dir)
+        #     if result:
+        #         results[f"mfold_{param_name}"] = result
+        
+        # TODO: Re-enable mfold results collection when we find a non-interactive version
         
         return results
     
@@ -372,6 +492,9 @@ class mRNAStructurePipeline:
         
         # Run predictions
         self.run_rnafold_predictions(input_file)
+        # self.run_mfold_predictions(input_file)  # Temporarily disabled - mfold 3.6 has interactive-only issues
+        
+        # TODO: Re-enable mfold when we find a non-interactive version
         
         # Parse and collect results
         print("Parsing prediction results...")
