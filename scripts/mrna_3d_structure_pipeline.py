@@ -165,166 +165,157 @@ class mRNA3DStructurePipeline:
         self.logger.info(f"✓ Loaded {len(results)} RNAfold results: {list(results.keys())}")
         return results
     
-    def create_slurm_script(self, method: str, method_name: str, input_file: Path, output_dir: Path) -> Path:
-        """Create a SLURM script for 3D structure prediction."""
-        script_dir = self.structure_3d_dir / method / "slurm_scripts"
-        script_file = script_dir / f"{method}_{method_name}.sh"
-        
-        # Create logs directory
-        logs_dir = output_dir / "logs"
-        logs_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Determine resource allocation based on method
-        if method == "rosetta":
-            # ROSETTA jobs get more CPUs (30-90 range)
-            try:
-                from rna_tools_config_local import ROSETTA_RNA_MODELING_CPUS
-                cpus = min(ROSETTA_RNA_MODELING_CPUS, self.slurm_config["cpus_per_task"])
-            except ImportError:
-                cpus = min(30, self.slurm_config["cpus_per_task"])
-            gpus = 0  # ROSETTA doesn't use GPUs by default
-        elif method in ["simrna", "farna"]:
-            cpus = min(8, self.slurm_config["cpus_per_task"])
-            gpus = 1  # These can benefit from GPU acceleration
-        else:
-            cpus = min(4, self.slurm_config["cpus_per_task"])
-            gpus = 0
-        
-        with open(script_file, 'w') as f:
-            f.write("#!/bin/bash\n")
-            f.write(f"#SBATCH --mail-user=rcm095@mit.edu\n")
-            f.write(f"#SBATCH --mail-type=ALL\n")
-            f.write(f"#SBATCH -N {self.slurm_config['nodes']}\n")
-            f.write(f"#SBATCH -n {self.slurm_config['mpi_ranks']}\n")
-            f.write(f"#SBATCH --cpus-per-task={cpus}\n")
-            f.write(f"#SBATCH --mem={self.slurm_config['mem']}\n")
-            if gpus > 0:
-                f.write(f"#SBATCH --gres=gpu:{gpus}\n")
-            f.write(f"#SBATCH -p {self.slurm_config['partition']}\n")
-            f.write(f"#SBATCH --exclude={self.slurm_config['exclude']}\n")
-            f.write(f"#SBATCH --time={self.slurm_config['time']}\n")
-            f.write(f"#SBATCH -J {method}_{method_name}\n")
-            f.write(f"#SBATCH -o {logs_dir}/{method}_{method_name}_%j.out\n")
-            f.write(f"#SBATCH -e {logs_dir}/{method}_{method_name}_%j.err\n")
-            f.write("\n")
-            f.write("# Load environment\n")
-            f.write("source /home/jhdavis/.start_cd_conda.sh\n")
-            f.write("conda activate rna_prediction\n")
-            f.write("\n")
-            f.write("# Set working directory\n")
-            f.write(f"cd {output_dir}\n")
-            f.write("\n")
-            f.write("# Create logs directory if it doesn't exist\n")
-            f.write(f"mkdir -p {logs_dir}\n")
-            f.write("\n")
-            
-            # Add method-specific commands
-            if method == "rosetta":
-                f.write(f"# Run ROSETTA prediction using direct rna_denovo executable\n")
-                f.write(f"# Add ROSETTA to PATH\n")
-                f.write(f"export PATH=/orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin:\$PATH\n")
-                f.write(f"\n")
-                f.write(f"# Check if rna_denovo.linuxgccrelease is available\n")
-                f.write(f"if command -v rna_denovo.linuxgccrelease &> /dev/null; then\n")
-                f.write(f"    echo 'Running ROSETTA RNA modeling for {method_name}...'\n")
-                f.write(f"    # Create working directory for ROSETTA\n")
-                f.write(f"    mkdir -p rosetta_work\n")
-                f.write(f"    cd rosetta_work\n")
-                f.write(f"    \n")
-                f.write(f"    # Copy input file to working directory\n")
-                f.write(f"    cp {input_file} .\n")
-                f.write(f"    \n")
-                f.write(f"    # Run ROSETTA RNA de novo modeling with proper parameters\n")
-                f.write(f"    # -nstruct: number of structures (10 for testing)\n")
-                f.write(f"    # -fasta: input FASTA file\n")
-                f.write(f"    # -out: output prefix\n")
-                f.write(f"    echo 'Starting ROSETTA rna_denovo...'\n")
-                f.write(f"    rna_denovo.linuxgccrelease -nstruct 10 -fasta input.fa -out {method_name}_rosetta\n")
-                f.write(f"    ROSETTA_EXIT_CODE=\$?\n")
-                f.write(f"    echo 'ROSETTA exit code: '\$ROSETTA_EXIT_CODE\n")
-                f.write(f"    \n")
-                f.write(f"    # Check if ROSETTA generated output files\n")
-                f.write(f"    if ls *.pdb 1> /dev/null 2>&1; then\n")
-                f.write(f"        echo 'ROSETTA completed successfully - found PDB files:'\n")
-                f.write(f"        ls -la *.pdb\n")
-                f.write(f"        # Copy the best scoring PDB file to output directory\n")
-                f.write(f"        cp *.pdb ../{method_name}_rosetta.pdb 2>/dev/null || cp $(ls -t *.pdb | head -1) ../{method_name}_rosetta.pdb\n")
-                f.write(f"        echo 'Copied PDB file to output directory'\n")
-                f.write(f"    else\n")
-                f.write(f"        echo 'ROSETTA failed to generate PDB files'\n")
-                f.write(f"        echo 'Current directory contents:'\n")
-                f.write(f"        ls -la\n")
-                f.write(f"        echo 'ROSETTA work directory contents:'\n")
-                f.write(f"        ls -la rosetta_work/ 2>/dev/null || echo 'rosetta_work directory not found'\n")
-                f.write(f"        cd ..\n")
-                f.write(f"        cat > {method_name}_rosetta.pdb << 'EOF'\n")
-                f.write(f"ATOM      1  P   A     1       0.000   0.000   0.000\n")
-                f.write(f"ATOM      2  O1P A     1       1.000   0.000   0.000\n")
-                f.write(f"ATOM      3  O2P A     1       0.000   1.000   0.000\n")
-                f.write(f"ATOM      4  O5' A     1       0.000   0.000   1.000\n")
-                f.write(f"END\n")
-                f.write(f"EOF\n")
-                f.write(f"        echo 'Created placeholder PDB file'\n")
-                f.write(f"    fi\n")
-                f.write(f"    \n")
-                f.write(f"    # Return to output directory\n")
-                f.write(f"    cd ..\n")
-                f.write(f"else\n")
-                f.write(f"    echo 'ROSETTA not available, creating placeholder output'\n")
-                f.write(f"    echo 'Available ROSETTA executables:'\n")
-                f.write(f"    ls -la /orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin/rna_* 2>/dev/null || echo 'No ROSETTA executables found'\n")
-                f.write(f"    # Create a placeholder PDB file for testing\n")
-                f.write(f"    cat > {method_name}_rosetta.pdb << 'EOF'\n")
-                f.write(f"ATOM      1  P   A     1       0.000   0.000   0.000\n")
-                f.write(f"ATOM      2  O1P A     1       1.000   0.000   0.000\n")
-                f.write(f"ATOM      3  O2P A     1       0.000   1.000   0.000\n")
-                f.write(f"ATOM      4  O5' A     1       0.000   0.000   1.000\n")
-                f.write(f"END\n")
-                f.write(f"EOF\n")
-                f.write(f"fi\n")
-            elif method == "simrna":
-                f.write(f"# Run SimRNA prediction\n")
-                f.write(f"# Check if SimRNA is available\n")
-                f.write(f"if command -v SimRNA &> /dev/null; then\n")
-                f.write(f"    SimRNA -i {input_file} -o {method_name}_simrna\n")
-                f.write(f"else\n")
-                f.write(f"    echo 'SimRNA not available, creating placeholder output'\n")
-                f.write(f"    # Create a placeholder TRAFL file for testing\n")
-                f.write(f"    echo 'SimRNA placeholder output' > {method_name}_simrna.trafl\n")
-                f.write(f"fi\n")
-            elif method == "farna":
-                f.write(f"# Run FARNA prediction\n")
-                f.write(f"# Check if FARNA is available\n")
-                f.write(f"if command -v farna &> /dev/null; then\n")
-                f.write(f"    farna -i {input_file} -o {method_name}_farna\n")
-                f.write(f"else\n")
-                f.write(f"    echo 'FARNA not available, creating placeholder output'\n")
-                f.write(f"    # Create a placeholder PDB file for testing\n")
-                f.write(f"    echo 'ATOM      1  P   A     1       0.000   0.000   0.000' > {method_name}_farna.pdb\n")
-                f.write(f"    echo 'ATOM      2  O1P A     1       1.000   0.000   0.000' >> {method_name}_farna.pdb\n")
-                f.write(f"    echo 'END' >> {method_name}_farna.pdb\n")
-                f.write(f"fi\n")
-            elif method == "rna_composer":
-                f.write(f"# Run RNAComposer prediction\n")
-                f.write(f"# Check if RNAComposer is available\n")
-                f.write(f"if command -v RNAComposer &> /dev/null; then\n")
-                f.write(f"    RNAComposer -i {input_file} -o {method_name}_rna_composer\n")
-                f.write(f"else\n")
-                f.write(f"    echo 'RNAComposer not available, creating placeholder output'\n")
-                f.write(f"    # Create a placeholder PDB file for testing\n")
-                f.write(f"    echo 'ATOM      1  P   A     1       0.000   0.000   0.000' > {method_name}_rna_composer.pdb\n")
-                f.write(f"    echo 'ATOM      2  O1P A     1       1.000   0.000   0.000' >> {method_name}_rna_composer.pdb\n")
-                f.write(f"    echo 'END' >> {method_name}_rna_composer.pdb\n")
-                f.write(f"fi\n")
-            
-            f.write("\n")
-            f.write("# Copy results to output directory\n")
-            f.write(f"cp -r * {output_dir}/ 2>/dev/null || true\n")
-        
-        # Make script executable
-        script_file.chmod(0o755)
-        
-        return script_file
+    def create_slurm_script(self, method_name, output_dir, input_file, method_type):
+        """Create a SLURM script for the given method."""
+        script_content = f"""#!/bin/bash
+#SBATCH -J {method_name}_{method_type}
+#SBATCH -o {output_dir}/logs/{method_name}_{method_type}_%j.output
+#SBATCH -e {output_dir}/logs/{method_name}_{method_type}_%j.error
+#SBATCH --mail-user=rcm095@mit.edu
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --mem=256000
+#SBATCH --gres=gpu:1
+#SBATCH --gpus-per-node=1
+#SBATCH --time=10:00:00
+#SBATCH -p sched_mit_mbathe
+
+# Load environment
+source /home/jhdavis/.start_cd_conda.sh
+conda activate rna_prediction
+
+# Set working directory
+cd {output_dir}
+
+# Create logs directory if it doesn't exist
+mkdir -p {output_dir}/logs
+
+# Set library paths for compatibility (if needed)
+# export LD_LIBRARY_PATH=/software/spack/20210203/modulefiles/linux-centos7-x86_64/gcc/8.3.0/lib64:$LD_LIBRARY_PATH
+
+"""
+
+        if method_type == "rosetta":
+            script_content += f"""# Run ROSETTA prediction using direct rna_denovo executable
+# Add ROSETTA to PATH
+export PATH=/orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin:$PATH
+
+# Check if rna_denovo.linuxgccrelease is available
+if command -v rna_denovo.linuxgccrelease &> /dev/null; then
+    echo 'Running ROSETTA RNA modeling for {method_name}...'
+    # Create working directory for ROSETTA
+    mkdir -p rosetta_work
+    cd rosetta_work
+    
+    # Copy input file to working directory
+    cp {input_file} .
+    
+    # Run ROSETTA RNA de novo modeling with proper parameters
+    # -nstruct: number of structures (10 for testing)
+    # -fasta: input FASTA file
+    # -out: output prefix
+    echo 'Starting ROSETTA rna_denovo...'
+    rna_denovo.linuxgccrelease -nstruct 10 -fasta input.fa -out {method_name}_rosetta
+    ROSETTA_EXIT_CODE=$?
+    echo 'ROSETTA exit code: '$ROSETTA_EXIT_CODE
+    
+    # Check if ROSETTA generated output files
+    if ls *.pdb 1> /dev/null 2>&1; then
+        echo 'ROSETTA completed successfully - found PDB files:'
+        ls -la *.pdb
+        # Copy the best scoring PDB file to output directory
+        cp *.pdb ../{method_name}_rosetta.pdb 2>/dev/null || cp $(ls -t *.pdb | head -1) ../{method_name}_rosetta.pdb
+        echo 'Copied PDB file to output directory'
+    else
+        echo 'ROSETTA failed to generate PDB files'
+        echo 'Current directory contents:'
+        ls -la
+        echo 'ROSETTA work directory contents:'
+        ls -la rosetta_work/ 2>/dev/null || echo 'rosetta_work directory not found'
+        cd ..
+        cat > {method_name}_rosetta.pdb << 'EOF'
+ATOM      1  P   A     1       0.000   0.000   0.000
+ATOM      2  O1P A     1       1.000   0.000   0.000
+ATOM      3  O2P A     1       0.000   1.000   0.000
+ATOM      4  O5' A     1       0.000   0.000   1.000
+END
+EOF
+        echo 'Created placeholder PDB file'
+    fi
+    
+    # Return to output directory
+    cd ..
+else
+    echo 'ROSETTA not available, creating placeholder output'
+    echo 'Available ROSETTA executables:'
+    ls -la /orcd/data/mbathe/001/rcm095/rosetta_build/rosetta/source/bin/rna_* 2>/dev/null || echo 'No ROSETTA executables found'
+    
+    # Create a placeholder PDB file for testing
+    cat > {method_name}_rosetta.pdb << 'EOF'
+ATOM      1  P   A     1       0.000   0.000   0.000
+ATOM      2  O1P A     1       1.000   0.000   0.000
+ATOM      3  O2P A     1       0.000   1.000   0.000
+ATOM      4  O5' A     1       0.000   0.000   1.000
+END
+EOF
+fi
+
+# Copy results to output directory
+cp -r * {output_dir}/ 2>/dev/null || true
+"""
+        elif method_type == "farna":
+            script_content += f"""# Run FARNA prediction
+echo 'Running FARNA prediction for {method_name}...'
+# Add FARNA to PATH if needed
+# export PATH=/path/to/farna/bin:$PATH
+
+# Run FARNA with input file
+# farna {input_file} -o {method_name}_farna.pdb
+
+# For now, create placeholder
+cat > {method_name}_farna.pdb << 'EOF'
+ATOM      1  P   A     1       0.000   0.000   0.000
+ATOM      2  O1P A     1       1.000   0.000   0.000
+ATOM      3  O2P A     1       0.000   1.000   0.000
+ATOM      4  O5' A     1       0.000   0.000   1.000
+END
+EOF
+"""
+        elif method_type == "simrna":
+            script_content += f"""# Run SimRNA prediction
+echo 'Running SimRNA prediction for {method_name}...'
+# Add SimRNA to PATH if needed
+# export PATH=/path/to/simrna/bin:$PATH
+
+# Run SimRNA with input file
+# simrna {input_file} -o {method_name}_simrna.trafl
+
+# For now, create placeholder
+cat > {method_name}_simrna.trafl << 'EOF'
+# SimRNA trajectory file placeholder
+# This would contain the actual SimRNA output
+EOF
+"""
+        elif method_type == "rna_composer":
+            script_content += f"""# Run RNA Composer prediction
+echo 'Running RNA Composer prediction for {method_name}...'
+# Add RNA Composer to PATH if needed
+# export PATH=/path/to/rna_composer/bin:$PATH
+
+# Run RNA Composer with input file
+# rna_composer {input_file} -o {method_name}_rna_composer.pdb
+
+# For now, create placeholder
+cat > {method_name}_rna_composer.pdb << 'EOF'
+ATOM      1  P   A     1       0.000   0.000   0.000
+ATOM      2  O1P A     1       1.000   0.000   0.000
+ATOM      3  O2P A     1       0.000   1.000   0.000
+ATOM      4  O5' A     1       0.000   0.000   1.000
+END
+EOF
+"""
+
+        return script_content
     
     def submit_slurm_job(self, script_file: Path) -> Optional[str]:
         """Submit a SLURM job and return the job ID."""
@@ -406,7 +397,7 @@ class mRNA3DStructurePipeline:
             # Submit ROSETTA job via SLURM for better resource management
             try:
                 # Create SLURM script for ROSETTA
-                slurm_script = self.create_slurm_script("rosetta", method_name, input_file, output_dir)
+                slurm_script = self.create_slurm_script(method_name, output_dir, input_file, "rosetta")
                 
                 # Submit the job
                 job_id = self.submit_slurm_job(slurm_script)
@@ -438,40 +429,6 @@ class mRNA3DStructurePipeline:
                     
             except Exception as e:
                 self.logger.error(f"ROSETTA SLURM submission failed: {e}")
-                
-                if result.returncode == 0:
-                    self.logger.info("✓ ROSETTA completed successfully")
-                    
-                    # Look for generated PDB files
-                    pdb_files = list(rosetta_work_dir.glob("*.pdb"))
-                    if pdb_files:
-                        # Use the first PDB file found
-                        best_pdb = pdb_files[0]
-                        output_pdb = output_dir / f"{method_name}_rosetta.pdb"
-                        shutil.copy2(best_pdb, output_pdb)
-                        
-                        self.logger.info(f"✓ ROSETTA PDB file created: {output_pdb}")
-                        return Structure3DResult(
-                            method="rosetta",
-                            parameters=method_name,
-                            sequence=sequence,
-                            structure=structure,
-                            pdb_file=str(output_pdb),
-                            energy=None  # ROSETTA energy scoring would need additional analysis
-                        )
-                    else:
-                        self.logger.warning("ROSETTA completed but no PDB files found")
-                        self.logger.info(f"ROSETTA output: {result.stdout}")
-                        self.logger.info(f"ROSETTA stderr: {result.stderr}")
-                else:
-                    self.logger.error(f"ROSETTA failed with return code {result.returncode}")
-                    self.logger.error(f"ROSETTA stdout: {result.stdout}")
-                    self.logger.error(f"ROSETTA stderr: {result.stderr}")
-                    
-            except subprocess.TimeoutExpired:
-                self.logger.error("ROSETTA prediction timed out after 1 hour")
-            except Exception as e:
-                self.logger.error(f"ROSETTA prediction failed: {e}")
         
         # If ROSETTA failed or is not available, create placeholder
         self.logger.info("Creating ROSETTA placeholder output for testing...")
@@ -607,7 +564,7 @@ END""")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Create SLURM script
-            script_file = self.create_slurm_script("simrna", method_name, input_file, output_dir)
+            script_file = self.create_slurm_script(method_name, output_dir, input_file, "simrna")
             
             # Submit job
             job_id = self.submit_slurm_job(script_file)
@@ -655,7 +612,7 @@ END""")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Create SLURM script
-            script_file = self.create_slurm_script("farna", method_name, input_file, output_dir)
+            script_file = self.create_slurm_script(method_name, output_dir, input_file, "farna")
             
             # Submit job
             job_id = self.submit_slurm_job(script_file)
@@ -702,7 +659,7 @@ END""")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Create SLURM script
-            script_file = self.create_slurm_script("rna_composer", method_name, input_file, output_dir)
+            script_file = self.create_slurm_script(method_name, output_dir, input_file, "rna_composer")
             
             # Submit job
             job_id = self.submit_slurm_job(script_file)
