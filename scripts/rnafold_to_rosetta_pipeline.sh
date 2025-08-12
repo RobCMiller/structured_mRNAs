@@ -24,8 +24,8 @@ echo "Conda environment: $CONDA_DEFAULT_ENV"
 echo "==================================="
 
 # Create results directory for this run
-RUN_ID=$(date +%Y%m%d_%H%M%S)
-RESULTS_DIR="results/rosetta_analysis_${RUN_ID}"
+RUN_ID=$(date +%Y%m%d_%H_%M_%S)
+RESULTS_DIR="results/${RUN_ID}_RNAfold_Rosetta_results"
 mkdir -p "$RESULTS_DIR"
 
 echo "Results directory: $RESULTS_DIR"
@@ -179,9 +179,13 @@ echo "=== ALL ROSETTA JOBS COMPLETED ==="
 echo "Checking output files..."
 ls -la "$RESULTS_DIR/rosetta/"
 
+# Create PDB output directory
+mkdir -p "$RESULTS_DIR/pdbs"
+
 # Extract PDB files from all silent files
 echo "Extracting PDB files..."
-for silent_file in "$RESULTS_DIR/rosetta/"*.out; do
+cd "$RESULTS_DIR/pdbs"
+for silent_file in "../rosetta/"*.out; do
     if [ -f "$silent_file" ]; then
         echo "Extracting PDB from: $silent_file"
         /nobackup/users/rcm095/Code/rosetta_build/source/bin/extract_pdbs.linuxgccrelease \
@@ -194,7 +198,12 @@ done
 echo "=== FINAL STATUS ==="
 echo "End time: $(date)"
 echo "Results directory: $RESULTS_DIR"
+echo ""
+echo "ROSETTA output files:"
 ls -la "$RESULTS_DIR/rosetta/"
+echo ""
+echo "PDB files:"
+ls -la "$RESULTS_DIR/pdbs/"
 
 EOF
 
@@ -234,9 +243,17 @@ Each job uses 12 CPUs, total: 84 CPUs
 Job submission script: submit_rosetta_jobs.sh
 
 Expected Output:
-- 7 silent files (.out)
-- 7 PDB files (after extraction)
+- 7 silent files (.out) in rosetta/ directory
+- 7 PDB files in pdbs/ directory (after extraction)
 - Comprehensive structural analysis
+
+Directory Structure:
+$RESULTS_DIR/
+├── rnafold/           # RNAfold secondary structure predictions
+├── rosetta/           # ROSETTA 3D structure predictions (7 models)
+├── pdbs/              # Final PDB files (7 models)
+├── submit_rosetta_jobs.sh  # ROSETTA job submission script
+└── pipeline_summary.txt    # This summary report
 
 EOF
 
