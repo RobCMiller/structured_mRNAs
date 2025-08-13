@@ -1,0 +1,63 @@
+# RNA 3D Prediction Pipeline Configuration
+# Edit these paths to match your system setup
+
+# ============================================================================
+# TOOL PATHS (REQUIRED: edit these to match your installation)
+# ============================================================================
+
+# ROSETTA installation
+rosetta_bin: "/nobackup/users/rcm095/Code/rosetta_build/source/bin"
+rnafold_bin: "/home/jhdavis/miniconda3/envs/rna_prediction/bin/RNAfold"
+
+# Deep Learning Model Paths
+trrosettarna_bin: "/opt/trRosettaRNA/bin/trRosettaRNA"
+deepfoldrna_bin: "/opt/DeepFoldRNA/bin/deepfoldrna"
+nufold_bin: "/opt/NuFold/run_nufold.py"
+rhofoldplus_bin: "/opt/RhoFoldPlus/run_rhofoldplus.py"
+rna_rm_bin: "/opt/RNA_RM/run_rna_rm.py"
+paxnet_bin: "/opt/PaxNet/score_models.py"
+
+# ============================================================================
+# PIPELINE TUNABLES (OPTIONAL: adjust based on your needs)
+# ============================================================================
+
+# Model Generation Limits
+max_models_per_tool: 5          # How many PDBs per DL tool to keep before Rosetta
+rosetta_relax_rounds: 2         # How many Rosetta refinement passes
+paxnet_batch_limit: 2000        # If total models > this, skip PaxNet by default (to avoid bottleneck)
+
+# Resource Allocation
+rosetta_threads: 8              # Threads per ROSETTA job
+max_concurrent_jobs: 4          # Maximum concurrent ROSETTA jobs
+
+# Quality Thresholds
+energy_threshold: -50.0          # Energy threshold for keeping models
+clash_threshold: 0.3             # Clash score threshold for model filtering
+
+# ============================================================================
+# SLURM CONFIGURATION (for cluster execution)
+# ============================================================================
+
+# SLURM Parameters
+slurm_partition: "sched_mit_mbathe"
+slurm_memory: "8G"
+slurm_time: "06:00:00"
+slurm_cpus: 12
+
+# ============================================================================
+# ADVANCED SETTINGS (expert users only)
+# ============================================================================
+
+# Model Selection Strategy
+use_paxnet_ranking: true        # Enable PaxNet model ranking
+use_rosetta_refinement: true    # Enable ROSETTA refinement
+use_secondary_constraints: true # Use RNAfold constraints in ROSETTA
+
+# Output Options
+save_intermediate_models: true  # Keep intermediate DL model outputs
+generate_visualizations: true   # Create structure comparison plots
+compress_outputs: false         # Compress large output files
+
+# Debug Options
+verbose_logging: true           # Enable detailed logging
+save_debug_info: false         # Save intermediate calculation files
